@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import toolcli
 import toolstr
 
 from . import cli_utils
@@ -85,7 +86,10 @@ def module_to_dict(module):
         raise Exception('unknown module format: ' + str(module))
 
 
-def print_module_summary(module):
+def print_module_summary(module, max_width: int | None = None):
+
+    if max_width is None:
+        max_width = toolcli.get_n_terminal_cols()
 
     module = module_to_dict(module)
     module_attrs = get_module_attrs(module)
@@ -129,6 +133,7 @@ def print_module_summary(module):
             'module': styles['option'],
             '': styles['comment'],
         },
+        max_table_width=max_width,
     )
 
     # external modules
@@ -153,6 +158,7 @@ def print_module_summary(module):
             'module': styles['option'],
             '': styles['comment'],
         },
+        max_table_width=max_width,
     )
 
     # functions
@@ -182,6 +188,7 @@ def print_module_summary(module):
             'function': styles['description'],
             '': styles['comment'],
         },
+        max_table_width=max_width,
     )
 
     # dunder
@@ -200,6 +207,7 @@ def print_module_summary(module):
             'type': styles['description'],
             '': styles['comment'],
         },
+        max_table_width=max_width,
     )
 
     # other
@@ -218,4 +226,5 @@ def print_module_summary(module):
             'type': styles['description'],
             '': styles['comment'],
         },
+        max_table_width=max_width,
     )
