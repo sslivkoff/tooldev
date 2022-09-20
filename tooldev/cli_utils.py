@@ -22,7 +22,7 @@ def run_cli(
     **toolcli_kwargs: typing.Any,
 ) -> None:
 
-    command_index = {
+    command_index: typing.Mapping[tuple[str, ...], str] = {
         (): 'tooldev.commands.root_command',
         ('lsp',): 'tooldev.commands.lsp_command',
         ('pwp',): 'tooldev.commands.pwp_command',
@@ -35,7 +35,6 @@ def run_cli(
         'base_command': 'td',
         'description': 'td is a suite of CLI tools for python development',
         'version': tooldev.__version__,
-        'command_index': command_index,
         'style_theme': styles,
         'include_standard_subcommands': True,
         'include_debug_arg': True,
