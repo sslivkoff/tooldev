@@ -86,145 +86,161 @@ def module_to_dict(module):
         raise Exception('unknown module format: ' + str(module))
 
 
-def print_module_summary(module, max_width: int | None = None):
+def print_module_summary(module, max_width: int | None = None, sections=None):
 
     if max_width is None:
         max_width = toolcli.get_n_terminal_cols()
+
+    if sections is None:
+        sections = [
+            'title',
+            'internal_modules',
+            'external_modules',
+            'functions',
+            'dunder',
+            'other',
+        ]
 
     module = module_to_dict(module)
     module_attrs = get_module_attrs(module)
 
     styles = cli_utils.get_cli_styles()
 
-    toolstr.print_text_box(
-        'Namespace Summary for ' + module.get('__name__', '\[unnamed]'),
-        style=styles['title'],
-    )
-    print()
-    toolstr.print_bullet(
-        key='items in module namespace:',
-        value=len(module),
-        bullet_str='',
-        styles=styles,
-    )
-    for key, value in module_attrs.items():
-        toolstr.print_bullet(key=key, value=len(value), styles=styles)
+    if 'title' in sections:
+        toolstr.print_text_box(
+            'Namespace Summary for ' + module.get('__name__', '\[unnamed]'),
+            style=styles['title'],
+        )
+        print()
+        toolstr.print_bullet(
+            key='items in module namespace:',
+            value=len(module),
+            bullet_str='',
+            styles=styles,
+        )
+        for key, value in module_attrs.items():
+            toolstr.print_bullet(key=key, value=len(value), styles=styles)
 
     # internal modules
-    print()
-    toolstr.print_text_box('Internal Modules', style=styles['title'])
-    rows = [
-        [module.get('__name__', '')]
-        for module_name, module in sorted(
-            module_attrs['internal_modules'].items()
+    if 'internal_modules' in sections:
+        print()
+        toolstr.print_text_box('Internal Modules', style=styles['title'])
+        rows = [
+            [module.get('__name__', '')]
+            for module_name, module in sorted(
+                module_attrs['internal_modules'].items()
+            )
+        ]
+        rows = sorted(rows)
+        toolstr.print_table(
+            rows,
+            compact=2,
+            labels=['module'],
+            add_row_index=True,
+            column_justify={'module': 'left'},
+            label_justify='left',
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'module': styles['option'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
         )
-    ]
-    rows = sorted(rows)
-    toolstr.print_table(
-        rows,
-        compact=2,
-        labels=['module'],
-        add_row_index=True,
-        column_justify={'module': 'left'},
-        label_justify='left',
-        border=styles['comment'],
-        label_style=styles['title'],
-        column_styles={
-            'module': styles['option'],
-            '': styles['comment'],
-        },
-        max_table_width=max_width,
-    )
 
     # external modules
-    print()
-    toolstr.print_text_box('External Modules', style=styles['title'])
-    rows = [
-        [module.get('__name__', '')]
-        for module_name, module in sorted(
-            module_attrs['external_modules'].items()
+    if 'external_modules' in sections:
+        print()
+        toolstr.print_text_box('External Modules', style=styles['title'])
+        rows = [
+            [module.get('__name__', '')]
+            for module_name, module in sorted(
+                module_attrs['external_modules'].items()
+            )
+        ]
+        toolstr.print_table(
+            rows,
+            compact=1,
+            labels=['module'],
+            add_row_index=True,
+            column_justify={'module': 'left'},
+            label_justify='left',
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'module': styles['option'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
         )
-    ]
-    toolstr.print_table(
-        rows,
-        compact=1,
-        labels=['module'],
-        add_row_index=True,
-        column_justify={'module': 'left'},
-        label_justify='left',
-        border=styles['comment'],
-        label_style=styles['title'],
-        column_styles={
-            'module': styles['option'],
-            '': styles['comment'],
-        },
-        max_table_width=max_width,
-    )
 
     # functions
-    print()
-    toolstr.print_text_box('Functions', style=styles['title'])
-    rows = [
-        [
-            function.__module__.split(module.get('__name__', ' '))[-1],
-            function_name,
+    if 'functions' in sections:
+        print()
+        toolstr.print_text_box('Functions', style=styles['title'])
+        rows = [
+            [
+                function.__module__.split(module.get('__name__', ' '))[-1],
+                function_name,
+            ]
+            for function_name, function in module_attrs['functions'].items()
         ]
-        for function_name, function in module_attrs['functions'].items()
-    ]
-    toolstr.print_table(
-        rows,
-        compact=2,
-        labels=[
-            'module',
-            'function',
-        ],
-        add_row_index=True,
-        label_justify='left',
-        column_justify={'module': 'left', 'function': 'left'},
-        border=styles['comment'],
-        label_style=styles['title'],
-        column_styles={
-            'module': styles['option'],
-            'function': styles['description'],
-            '': styles['comment'],
-        },
-        max_table_width=max_width,
-    )
+        toolstr.print_table(
+            rows,
+            compact=2,
+            labels=[
+                'module',
+                'function',
+            ],
+            add_row_index=True,
+            label_justify='left',
+            column_justify={'module': 'left', 'function': 'left'},
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'module': styles['option'],
+                'function': styles['description'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
+        )
 
     # dunder
-    print()
-    toolstr.print_text_box('Dunder', style=styles['title'])
-    rows = [[key, type(value)] for key, value in module_attrs['dunder'].items()]
-    toolstr.print_table(
-        rows,
-        labels=['name', 'type'],
-        add_row_index=True,
-        compact=2,
-        border=styles['comment'],
-        label_style=styles['title'],
-        column_styles={
-            'name': styles['option'],
-            'type': styles['description'],
-            '': styles['comment'],
-        },
-        max_table_width=max_width,
-    )
+    if 'dunder' in sections:
+        print()
+        toolstr.print_text_box('Dunder', style=styles['title'])
+        rows = [[key, type(value)] for key, value in module_attrs['dunder'].items()]
+        toolstr.print_table(
+            rows,
+            labels=['name', 'type'],
+            add_row_index=True,
+            compact=2,
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'name': styles['option'],
+                'type': styles['description'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
+        )
 
     # other
-    print()
-    toolstr.print_text_box('Other', style=styles['title'])
-    rows = [[key, type(value)] for key, value in module_attrs['other'].items()]
-    toolstr.print_table(
-        rows,
-        labels=['name', 'type'],
-        add_row_index=True,
-        compact=2,
-        border=styles['comment'],
-        label_style=styles['title'],
-        column_styles={
-            'name': styles['option'],
-            'type': styles['description'],
-            '': styles['comment'],
-        },
-        max_table_width=max_width,
-    )
+    if 'other' in sections:
+        print()
+        toolstr.print_text_box('Other', style=styles['title'])
+        rows = [[key, type(value)] for key, value in module_attrs['other'].items()]
+        toolstr.print_table(
+            rows,
+            labels=['name', 'type'],
+            add_row_index=True,
+            compact=2,
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'name': styles['option'],
+                'type': styles['description'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
+        )
