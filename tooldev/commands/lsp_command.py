@@ -20,6 +20,11 @@ def get_command_spec() -> toolcli.CommandSpec:
                 'nargs': '?',
             },
             {
+                'name': ['--verbose', '-v'],
+                'help': 'enable verbose mode',
+                'action': 'store_true',
+            },
+            {
                 'name': ('--modules', '-m'),
                 'help': 'display modules and hide other sections',
                 'action': 'store_true',
@@ -61,6 +66,7 @@ def get_command_spec() -> toolcli.CommandSpec:
 
 def lsp_command(
     package_or_module: str,
+    verbose: bool,
     modules: bool,
     functions: bool,
     classes: bool,
@@ -90,4 +96,8 @@ def lsp_command(
         sections = [name for name, value in raw_sections if value]
     else:
         sections = None
-    namespace_utils.print_module_summary(package, sections=sections)
+    namespace_utils.print_module_summary(
+        package,
+        sections=sections,
+        verbose=verbose,
+    )

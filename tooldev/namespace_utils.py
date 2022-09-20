@@ -106,8 +106,10 @@ def module_to_dict(module: GenericModule) -> typing.Mapping[str, typing.Any]:
 
 def print_module_summary(
     module: GenericModule,
+    *,
     max_width: int | None = None,
     sections: typing.Sequence[str] | None = None,
+    verbose: bool = False,
 ) -> None:
 
     if max_width is None:
@@ -212,9 +214,23 @@ def print_module_summary(
         rows = []
         for function_name, function in module_attrs['functions'].items():
 
+            function_module = function.__module__.split(
+                module.get('__name__', ' ')
+            )[-1]
+            if not verbose and len(function_module) > 25:
+                clips = 0
+                if function_module.startswith('.'):
+                    function_module = function_module[1:]
+                    clips += 1
+                while len(function_module) > 25:
+                    new_function_module = '.'.join(function_module.split('.')[1:])
+                    clips += 1
+                    function_module = new_function_module
+                function_module = '.' * clips + function_module
+
             docstring = _process_docstring(function.__doc__)
             row = [
-                function.__module__.split(module.get('__name__', ' '))[-1],
+                function_module,
                 function_name,
                 docstring,
             ]
