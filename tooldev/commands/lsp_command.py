@@ -31,6 +31,11 @@ def get_command_spec():
                 'action': 'store_true',
             },
             {
+                'name': ('--exceptions', '-e'),
+                'help': 'display exceptions and hide other sections',
+                'action': 'store_true',
+            },
+            {
                 'name': ('--dunder', '-d'),
                 'help': 'display dunder and hide other sections',
                 'action': 'store_true',
@@ -55,6 +60,7 @@ def lsp_command(
     modules: bool,
     functions: bool,
     classes: bool,
+    exceptions: bool,
     dunder: bool,
     other: bool,
 ) -> None:
@@ -72,6 +78,8 @@ def lsp_command(
             ['internal_modules', modules],
             ['external_modules', modules],
             ['functions', functions],
+            ['classes', classes],
+            ['exceptions', exceptions],
             ['dunder', dunder],
             ['other', other],
         ]

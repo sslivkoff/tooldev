@@ -21,6 +21,8 @@ def get_module_attrs(module):
     external_modules = {}
     functions = {}
     dunder = {}
+    exceptions = {}
+    classes = {}
     other = {}
     for key in sorted(module.keys()):
         value = module[key]
@@ -35,14 +37,20 @@ def get_module_attrs(module):
             functions[value.__name__] = value
         elif key.startswith('__') and key.endswith('__'):
             dunder[key] = value
+        elif isinstance(value, type) and issubclass(value, BaseException):
+            exceptions[key] = value
+        elif isinstance(value, type):
+            classes[key] = value
         else:
             other[key] = value
 
     return {
-        'functions': functions,
         'internal_modules': internal_modules,
         'external_modules': external_modules,
+        'functions': functions,
         'dunder': dunder,
+        'exceptions': exceptions,
+        'classes': classes,
         'other': other,
     }
 
@@ -94,6 +102,8 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
             'internal_modules',
             'external_modules',
             'functions',
+            'classes',
+            'exceptions',
             'dunder',
             'other',
         ]
@@ -123,7 +133,10 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         print()
         toolstr.print_text_box('Internal Modules', style=styles['title'])
         rows = [
-            [module.get('__name__', ''), _process_docstring(module.get('__doc__'))]
+            [
+                module.get('__name__', ''),
+                _process_docstring(module.get('__doc__')),
+            ]
             for module_name, module in sorted(
                 module_attrs['internal_modules'].items()
             )
@@ -150,7 +163,10 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         print()
         toolstr.print_text_box('External Modules', style=styles['title'])
         rows = [
-            [module.get('__name__', ''), _process_docstring(module.get('__doc__'))]
+            [
+                module.get('__name__', ''),
+                _process_docstring(module.get('__doc__')),
+            ]
             for module_name, module in sorted(
                 module_attrs['external_modules'].items()
             )
@@ -184,7 +200,6 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
                 function.__module__.split(module.get('__name__', ' '))[-1],
                 function_name,
                 docstring,
-
             ]
             rows.append(row)
 
@@ -198,7 +213,11 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
             ],
             add_row_index=True,
             label_justify='left',
-            column_justify={'module': 'left', 'function': 'left', 'description': 'left'},
+            column_justify={
+                'module': 'left',
+                'function': 'left',
+                'description': 'left',
+            },
             border=styles['comment'],
             label_style=styles['title'],
             column_styles={
@@ -209,11 +228,83 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
             max_table_width=max_width,
         )
 
+    if 'classes' in sections:
+        print()
+        toolstr.print_text_box('Classes', style=styles['title'])
+
+        rows = []
+        for class_name, class_class in module_attrs['classes'].items():
+            docstring = _process_docstring(class_class.__doc__)
+            row = [
+                class_name,
+                docstring,
+            ]
+            rows.append(row)
+
+        toolstr.print_table(
+            rows,
+            compact=2,
+            labels=[
+                'class',
+                'description',
+            ],
+            add_row_index=True,
+            label_justify='left',
+            column_justify={
+                'class': 'left',
+                'description': 'left',
+            },
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'class': styles['description'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
+        )
+
+    if 'exceptions' in sections:
+        print()
+        toolstr.print_text_box('Exceptions', style=styles['title'])
+
+        rows = []
+        for exception_name, exception in module_attrs['exceptions'].items():
+            docstring = _process_docstring(exception.__doc__)
+            row = [
+                exception_name,
+                docstring,
+            ]
+            rows.append(row)
+
+        toolstr.print_table(
+            rows,
+            compact=2,
+            labels=[
+                'exception',
+                'description',
+            ],
+            add_row_index=True,
+            label_justify='left',
+            column_justify={
+                'exception': 'left',
+                'description': 'left',
+            },
+            border=styles['comment'],
+            label_style=styles['title'],
+            column_styles={
+                'exception': styles['description'],
+                '': styles['comment'],
+            },
+            max_table_width=max_width,
+        )
+
     # dunder
     if 'dunder' in sections:
         print()
         toolstr.print_text_box('Dunder', style=styles['title'])
-        rows = [[key, type(value)] for key, value in module_attrs['dunder'].items()]
+        rows = [
+            [key, type(value)] for key, value in module_attrs['dunder'].items()
+        ]
         toolstr.print_table(
             rows,
             labels=['name', 'type'],
@@ -233,7 +324,9 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
     if 'other' in sections:
         print()
         toolstr.print_text_box('Other', style=styles['title'])
-        rows = [[key, type(value)] for key, value in module_attrs['other'].items()]
+        rows = [
+            [key, type(value)] for key, value in module_attrs['other'].items()
+        ]
         toolstr.print_table(
             rows,
             labels=['name', 'type'],
