@@ -123,7 +123,7 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         print()
         toolstr.print_text_box('Internal Modules', style=styles['title'])
         rows = [
-            [module.get('__name__', '')]
+            [module.get('__name__', ''), _process_docstring(module.get('__doc__'))]
             for module_name, module in sorted(
                 module_attrs['internal_modules'].items()
             )
@@ -132,9 +132,9 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         toolstr.print_table(
             rows,
             compact=2,
-            labels=['module'],
+            labels=['module', 'description'],
             add_row_index=True,
-            column_justify={'module': 'left'},
+            column_justify={'module': 'left', 'description': 'left'},
             label_justify='left',
             border=styles['comment'],
             label_style=styles['title'],
@@ -150,7 +150,7 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         print()
         toolstr.print_text_box('External Modules', style=styles['title'])
         rows = [
-            [module.get('__name__', '')]
+            [module.get('__name__', ''), _process_docstring(module.get('__doc__'))]
             for module_name, module in sorted(
                 module_attrs['external_modules'].items()
             )
@@ -158,9 +158,9 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
         toolstr.print_table(
             rows,
             compact=1,
-            labels=['module'],
+            labels=['module', 'description'],
             add_row_index=True,
-            column_justify={'module': 'left'},
+            column_justify={'module': 'left', 'description': 'left'},
             label_justify='left',
             border=styles['comment'],
             label_style=styles['title'],
@@ -175,23 +175,30 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
     if 'functions' in sections:
         print()
         toolstr.print_text_box('Functions', style=styles['title'])
-        rows = [
-            [
+
+        rows = []
+        for function_name, function in module_attrs['functions'].items():
+
+            docstring = _process_docstring(function.__doc__)
+            row = [
                 function.__module__.split(module.get('__name__', ' '))[-1],
                 function_name,
+                docstring,
+
             ]
-            for function_name, function in module_attrs['functions'].items()
-        ]
+            rows.append(row)
+
         toolstr.print_table(
             rows,
             compact=2,
             labels=[
                 'module',
                 'function',
+                'description',
             ],
             add_row_index=True,
             label_justify='left',
-            column_justify={'module': 'left', 'function': 'left'},
+            column_justify={'module': 'left', 'function': 'left', 'description': 'left'},
             border=styles['comment'],
             label_style=styles['title'],
             column_styles={
@@ -241,3 +248,13 @@ def print_module_summary(module, max_width: int | None = None, sections=None):
             },
             max_table_width=max_width,
         )
+
+
+def _process_docstring(docstring: str | None) -> str | None:
+    if isinstance(docstring, str):
+        lines = docstring.split('\n')
+        for line in lines:
+            if line.strip('=') != '':
+                return line.lstrip()
+        return ''
+    return docstring
