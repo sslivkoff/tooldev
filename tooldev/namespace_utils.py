@@ -78,10 +78,7 @@ def module_to_dict(module):
     if isinstance(module, dict):
         return module
     elif isinstance(module, moduletype):
-        module_dict = {}
-        for key in sorted(dir(module)):
-            module_dict[key] = getattr(module, key)
-        return module_dict
+        return vars(module)
     else:
         raise Exception('unknown module format: ' + str(module))
 
