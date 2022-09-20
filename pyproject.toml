@@ -17,3 +17,8 @@ dependencies = [
 
 [project.scripts]
 td = "tooldev.cli_utils:run_cli"
+
+[tool.mypy]
+strict = true
+implicit_reexport = true
+files = ["tooldev"]

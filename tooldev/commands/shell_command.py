@@ -5,11 +5,19 @@ These need to be added to a shell config directly
 """
 from __future__ import annotations
 
+import toolcli
 
-def get_command_spec():
+
+help_message = """print tooldev settings that should be added to shell config
+
+add this content to your shell config
+e.g. `td shell 1>> ~.profile`"""
+
+
+def get_command_spec() -> toolcli.CommandSpec:
     return {
         'f': shell_command,
-        'help': "print tooldev settings that should be added to shell config",
+        'help': help_message,
     }
 
 

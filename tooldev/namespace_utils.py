@@ -1,12 +1,23 @@
 from __future__ import annotations
 
+import typing
+
 import toolcli
 import toolstr
 
 from . import cli_utils
 
+if typing.TYPE_CHECKING:
+    import types
 
-def get_module_attrs(module):
+    GenericModule = typing.Union[
+        types.ModuleType, typing.Mapping[str, typing.Any]
+    ]
+
+
+def get_module_attrs(
+    module: GenericModule,
+) -> typing.Mapping[str, typing.Mapping[str, typing.Any]]:
     """return list of items in module namespace"""
 
     # convert to dict
@@ -55,7 +66,9 @@ def get_module_attrs(module):
     }
 
 
-def get_combined_modules(modules):
+def get_combined_modules(
+    modules: typing.Sequence[GenericModule],
+) -> GenericModule:
 
     modules = [module_to_dict(module) for module in modules]
 
@@ -80,7 +93,7 @@ def get_combined_modules(modules):
     }
 
 
-def module_to_dict(module):
+def module_to_dict(module: GenericModule) -> typing.Mapping[str, typing.Any]:
     moduletype = type(toolstr)
 
     if isinstance(module, dict):
@@ -91,7 +104,11 @@ def module_to_dict(module):
         raise Exception('unknown module format: ' + str(module))
 
 
-def print_module_summary(module, max_width: int | None = None, sections=None):
+def print_module_summary(
+    module: GenericModule,
+    max_width: int | None = None,
+    sections: typing.Sequence[str] | None = None,
+) -> None:
 
     if max_width is None:
         max_width = toolcli.get_n_terminal_cols()

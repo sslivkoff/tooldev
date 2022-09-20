@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import importlib
+import typing
+
+import toolcli
+
 from .. import directory_utils
 from .. import namespace_utils
 
 
-def get_command_spec():
+def get_command_spec() -> toolcli.CommandSpec:
     return {
         'f': lsp_command,
         'help': 'list items inside package namespace',
@@ -73,15 +77,15 @@ def lsp_command(
     package = importlib.import_module(package_name)
 
     if modules or functions or classes or dunder or other:
-        raw_sections = [
-            ['title', True],
-            ['internal_modules', modules],
-            ['external_modules', modules],
-            ['functions', functions],
-            ['classes', classes],
-            ['exceptions', exceptions],
-            ['dunder', dunder],
-            ['other', other],
+        raw_sections: typing.Sequence[tuple[str, bool]] = [
+            ('title', True),
+            ('internal_modules', modules),
+            ('external_modules', modules),
+            ('functions', functions),
+            ('classes', classes),
+            ('exceptions', exceptions),
+            ('dunder', dunder),
+            ('other', other),
         ]
         sections = [name for name, value in raw_sections if value]
     else:

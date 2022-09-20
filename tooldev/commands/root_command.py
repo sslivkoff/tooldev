@@ -3,7 +3,7 @@ from __future__ import annotations
 import toolcli
 
 
-def get_command_spec():
+def get_command_spec() -> toolcli.CommandSpec:
     return {
         'f': root_command,
         'help': 'insert',
